@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model UserProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique // Supabase Auth user.id
+  name      String?
+  business  String?
+  createdAt DateTime @default(now())
+
+  clients   Client[]
+  invoices  Invoice[]
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  userId    String   // Supabase Auth user.id (for RLS if needed)
+  name      String
+  email     String
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+
+  userProfile UserProfile @relation(fields: [userId], references: [userId])
+  invoices     Invoice[]
+}
+
+model Invoice {
+  id          String   @id @default(uuid())
+  userId      String
+  clientId    String
+  invoiceNumber String  @unique
+  issueDate   DateTime
+  dueDate     DateTime
+  status      InvoiceStatus @default(DRAFT)
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  userProfile UserProfile @relation(fields: [userId], references: [userId])
+  client      Client      @relation(fields: [clientId], references: [id])
+  items       InvoiceItem[]
+  payments    Payment[]
+}
+
+model InvoiceItem {
+  id         String   @id @default(uuid())
+  invoiceId  String
+  title      String
+  quantity   Int
+  unitPrice  Decimal
+  createdAt  DateTime @default(now())
+
+  invoice    Invoice  @relation(fields: [invoiceId], references: [id])
+}
+
+model Payment {
+  id         String   @id @default(uuid())
+  invoiceId  String
+  amount     Decimal
+  date       DateTime
+  method     String
+  createdAt  DateTime @default(now())
+
+  invoice    Invoice @relation(fields: [invoiceId], references: [id])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+}

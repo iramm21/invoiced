@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
-import Navbar from "@/components/layout/public/Navbar";
-import Footer from "@/components/layout/public/Footer";
+import { AuthProvider } from "@/providers/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Invoiced",
@@ -24,12 +23,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-grow">{children}</main>
-            <Toaster />
-            <Footer />
-          </div>
+          <AuthProvider>
+            <div className="flex min-h-screen flex-col">
+              <main className="flex-grow">{children}</main>
+              <Toaster />
+            </div>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
